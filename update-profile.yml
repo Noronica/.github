@@ -1,0 +1,35 @@
+name: Update organization profile
+
+on:
+  push:
+    paths:
+      - '.github/profile/README.md'
+      - '.github/scripts/update-profile.mjs'
+      - '.github/workflows/update-profile.yml'
+  schedule:
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Update dynamic repository section
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ORG: Noronica
+        run: node .github/scripts/update-profile.mjs
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/profile/README.md
+          git diff --cached --quiet || git commit -m "chore: update organization profile"
+          git push
